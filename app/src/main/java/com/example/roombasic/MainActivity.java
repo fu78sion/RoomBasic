@@ -18,8 +18,8 @@ import java.util.function.Consumer;
 public class MainActivity extends AppCompatActivity {
 
     //1. 声明变量
-    WordDataBase wordDataBase;
-    WordDao wordDao;
+    //WordDataBase wordDataBase;
+    //WordDao wordDao;
     Button buttonInsert, buttonUpdate, buttonDelete, buttonClear;
     TextView textView;
     //LiveData<List<Word>> allWordsLive;
@@ -66,13 +66,19 @@ public class MainActivity extends AppCompatActivity {
         buttonInsert.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Word word = new Word("Hello","你好");
-                Word word2 = new Word("world","世界");
+                String[] english = {"apple","banana","peach"};
+                String[] chinese = {"苹果","香蕉","吃个桃桃"};
+
+                for (int i = 0; i < english.length; i++) {
+                    wordViewModel.insertWords(new Word(english[i],chinese[i]));
+                }
+                //Word word = new Word("Hello","你好");
+                //Word word2 = new Word("world","世界");
                 //wordDao.insertWords(word,word2);
                 //updateView();
                 //这里是解决主线程无法使用数据库的问题
                 //new InsertAsyncTask(wordDao).execute(word,word2);
-                wordViewModel.insertWords(word,word2);
+                //wordViewModel.insertWords(word,word2);
             }
         });
 
@@ -87,21 +93,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-
-
-
-
-//    //更新完刷新界面
-//    public void updateView(){
-//        List<Word> list = wordDao.getAllWords();
-//        StringBuilder text = new StringBuilder();
-//        for (Word word : list) {
-//            text.append(word.getId()).append(":").append(word.getWord())
-//                    .append(":").append(word.getChineseMeaning());
-//        }
-//        textView.setText(text.toString());
-//    }
 }
 
 /**
@@ -112,7 +103,10 @@ public class MainActivity extends AppCompatActivity {
  * 3. 回到mainActivity 写一些操作
  * 4. 添加liveData，在dao里修改返回值类型，在mainActivity中获取liveData，设置observe
  * 5. 将database设置为单例，节省资源
- * 6. 解决不能在主线程中使用数据库的问题AsyncTask
+ * 6. 解决不能在主线程中使用数据库的问题AsyncTask，后台执行
  * 7. 添加viewModel，解决mainActivity太臃肿的问题 改的太多，有点懵逼
  * 8. 操作数据的功能应该独立出来，放到repository中
+ * 9. 层层封装，刚开始学 学不懂
+ *
+ * 10. 使用全新控件recyclerView，先添加控件，然后在res中添加配置
  */

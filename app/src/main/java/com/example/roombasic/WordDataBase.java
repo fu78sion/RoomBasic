@@ -25,6 +25,5 @@ public abstract class WordDataBase extends RoomDatabase {
     }
 
     //获取dao对象
-    //public abstract WordDao getWordDao();
     public abstract WordDao getWordDao();
 }
