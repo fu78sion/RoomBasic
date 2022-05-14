@@ -1,5 +1,6 @@
 package com.example.roombasic;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -27,5 +28,7 @@ public interface WordDao {
 
     //查询所有数据
     @Query("SELECT * FROM Word ORDER BY ID DESC")
-    List<Word> getAllWords();
+    //List<Word> getAllWords();
+    //这里的代码生成的时候事务直接帮我写好，很爽
+    LiveData<List<Word>> getAllWordsLive();
 }

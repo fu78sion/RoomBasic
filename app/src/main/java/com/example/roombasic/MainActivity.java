@@ -1,8 +1,12 @@
 package com.example.roombasic;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.room.Room;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -18,6 +22,10 @@ public class MainActivity extends AppCompatActivity {
     WordDao wordDao;
     Button buttonInsert, buttonUpdate, buttonDelete, buttonClear;
     TextView textView;
+    //LiveData<List<Word>> allWordsLive;
+
+    //创建viewModel实例
+    WordViewModel wordViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,15 +34,32 @@ public class MainActivity extends AppCompatActivity {
 
         //1. 获取wordDataBase
         // 三个参数：上下文，database类名，数据库文件名
-        wordDataBase = Room.databaseBuilder(this,WordDataBase.class,"word_database")
-                .allowMainThreadQueries().build();
+        // android不允许在主线程操作数据库
+        // .allowMainThreadQueries()是强制允许不开线程可以直接用，不推荐
+        //wordDataBase = Room.databaseBuilder(this,WordDataBase.class,"word_database")
+        //        .allowMainThreadQueries().build();
 
         //2. 创建Dao
-        wordDao = wordDataBase.getWordDao();
+        //wordDao = wordDataBase.getWordDao();
+
+        //获取liveData，实现动态监听，不用手动更新界面
+        //allWordsLive = wordDao.getAllWordsLive();
+        wordViewModel = new ViewModelProvider(this).get(WordViewModel.class);
+        wordViewModel.getAllWordsLive().observe(this, new Observer<List<Word>>() {
+            @Override
+            public void onChanged(List<Word> words) {
+                StringBuilder text = new StringBuilder();
+                for (Word word : words) {
+                    text.append(word.getId()).append(":").append(word.getWord())
+                            .append(":").append(word.getChineseMeaning()).append("\n");
+                }
+                textView.setText(text.toString());
+            }
+        });
 
         //3. 显示界面
         textView = findViewById(R.id.textView);
-        updateView();
+        //updateView();
 
         //添加数据
         buttonInsert = findViewById(R.id.button_insert);
@@ -43,22 +68,40 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Word word = new Word("Hello","你好");
                 Word word2 = new Word("world","世界");
-                wordDao.insertWords(word,word2);
-                updateView();
+                //wordDao.insertWords(word,word2);
+                //updateView();
+                //这里是解决主线程无法使用数据库的问题
+                //new InsertAsyncTask(wordDao).execute(word,word2);
+                wordViewModel.insertWords(word,word2);
+            }
+        });
+
+        //清空数据
+        buttonClear = findViewById(R.id.button_clear);
+        buttonClear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //wordDao.deleteAllWords();
+                //new ClearAsyncTask(wordDao).execute();
+                wordViewModel.clearWords();
             }
         });
     }
 
-    //更新完刷新界面
-    public void updateView(){
-        List<Word> list = wordDao.getAllWords();
-        StringBuilder text = new StringBuilder();
-        for (Word word : list) {
-            text.append(word.getId()).append(":").append(word.getWord())
-                    .append(":").append(word.getChineseMeaning());
-        }
-        textView.setText(text.toString());
-    }
+
+
+
+
+//    //更新完刷新界面
+//    public void updateView(){
+//        List<Word> list = wordDao.getAllWords();
+//        StringBuilder text = new StringBuilder();
+//        for (Word word : list) {
+//            text.append(word.getId()).append(":").append(word.getWord())
+//                    .append(":").append(word.getChineseMeaning());
+//        }
+//        textView.setText(text.toString());
+//    }
 }
 
 /**
@@ -66,5 +109,10 @@ public class MainActivity extends AppCompatActivity {
  * 具体步骤：
  * 1. 先添加room依赖
  * 2. 依次添加Entity（实体类），Dao（增删改查），Database
- * 3. 回到mainActivity
+ * 3. 回到mainActivity 写一些操作
+ * 4. 添加liveData，在dao里修改返回值类型，在mainActivity中获取liveData，设置observe
+ * 5. 将database设置为单例，节省资源
+ * 6. 解决不能在主线程中使用数据库的问题AsyncTask
+ * 7. 添加viewModel，解决mainActivity太臃肿的问题 改的太多，有点懵逼
+ * 8. 操作数据的功能应该独立出来，放到repository中
  */
