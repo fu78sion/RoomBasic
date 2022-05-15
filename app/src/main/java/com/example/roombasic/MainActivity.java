@@ -1,19 +1,18 @@
 package com.example.roombasic;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.room.Room;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.AsyncTask;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,11 +20,16 @@ public class MainActivity extends AppCompatActivity {
     //WordDataBase wordDataBase;
     //WordDao wordDao;
     Button buttonInsert, buttonUpdate, buttonDelete, buttonClear;
-    TextView textView;
+    //TextView textView;
     //LiveData<List<Word>> allWordsLive;
 
     //创建viewModel实例
     WordViewModel wordViewModel;
+
+    //更新视图 用recyclerView
+    RecyclerView recyclerView;
+    MyAdapter myAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,21 +48,33 @@ public class MainActivity extends AppCompatActivity {
 
         //获取liveData，实现动态监听，不用手动更新界面
         //allWordsLive = wordDao.getAllWordsLive();
+
+        recyclerView = findViewById(R.id.RecyclerView);
+        myAdapter = new MyAdapter();
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(myAdapter);
+
         wordViewModel = new ViewModelProvider(this).get(WordViewModel.class);
         wordViewModel.getAllWordsLive().observe(this, new Observer<List<Word>>() {
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onChanged(List<Word> words) {
-                StringBuilder text = new StringBuilder();
-                for (Word word : words) {
-                    text.append(word.getId()).append(":").append(word.getWord())
-                            .append(":").append(word.getChineseMeaning()).append("\n");
-                }
-                textView.setText(text.toString());
+//                StringBuilder text = new StringBuilder();
+//                for (Word word : words) {
+//                    text.append(word.getId()).append(":").append(word.getWord())
+//                            .append(":").append(word.getChineseMeaning()).append("\n");
+//                }
+//                textView.setText(text.toString());
+
+                //设置数据
+                myAdapter.setAllWords(words);
+                //调用
+                myAdapter.notifyDataSetChanged();
             }
         });
 
         //3. 显示界面
-        textView = findViewById(R.id.textView);
+        //textView = findViewById(R.id.textView_number);
         //updateView();
 
         //添加数据
@@ -109,4 +125,7 @@ public class MainActivity extends AppCompatActivity {
  * 9. 层层封装，刚开始学 学不懂
  *
  * 10. 使用全新控件recyclerView，先添加控件，然后在res中添加配置
+ * 11. 新建cell_normal,以及adaptor（这里要重写子类，好多东西，很麻烦）
+ *
+ * 12. 重新写一个cell_card,换种样式
  */
